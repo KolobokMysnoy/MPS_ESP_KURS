@@ -14,4 +14,10 @@ typedef struct messageLed
     int procent;
 };
 
+// Driver
+typedef struct messageDriver
+{
+    int procent;
+};
+
 #endif

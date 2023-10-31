@@ -8,13 +8,14 @@
 #include <espnow.h>
 
 typedef void (*onSentFunc)(uint8_t *, uint8_t);
-
+typedef void (*onReceiveFunc)(uint8_t *, uint8_t *, uint8_t);
 const int defaultTimesTry = 3;
 const int maxSizeOfPeers = 6;
 
 class Connector
 {
     onSenfFunc sentFunc;
+    onReceiveFunc receiveFunc;
     esp_now_role role;
 
     int freePeerId = 0;
@@ -35,6 +36,11 @@ public:
     void sendData(int idOfPeer, uint8_t *data, uint8_t size);
     // Add function to trigger when sent data
     void addFunctionOnSent(onSentFunc func);
+
+    // Add function to trigger when receive data
+    void addFunctionReceive(onReceiveFunc func);
+
+    uint8_t *getMac();
 };
 
 #endif

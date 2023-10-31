@@ -2,8 +2,14 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <espnow.h>
+
+// dependenties
 #include "motor.hpp"
 #include "Curtains.hpp"
+
+// block of connections
+#include "../connection/Connect.hpp"
+#include "../sendStructs/sendStructs.hpp"
 
 const int MaxValue = 512;
 
@@ -18,12 +24,10 @@ int timeToWait = 600;
 MOTOR motor = MOTOR(PinIn1, PinIn2);
 Curtains curt = Curtains(&motor, PinClosed, PinOpened);
 
+Connector con(ESP_NOW_ROLE_SLAVE);
 uint8_t peer1[] = {0xB4, 0x8A, 0x0A, 0x89, 0x0F, 0x10};
-typedef struct message
-{
-  int procent;
-};
-struct message myMessage;
+
+messageDriver myMessage;
 
 void OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
 {
@@ -40,10 +44,6 @@ void OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
   }
 }
 
-void closeCurt()
-{
-}
-
 void pinSetup()
 {
   pinMode(PinClosed, INPUT);
@@ -53,32 +53,10 @@ void pinSetup()
   pinMode(PinIn2, OUTPUT);
 }
 
-void macOut()
-{
-  // Get Mac Add
-  Serial.print("Mac Address: ");
-  Serial.print(WiFi.macAddress());
-  Serial.println("ESP-Now Sender");
-}
-
-void wifiSetup()
-{
-  WiFi.mode(WIFI_STA);
-  if (esp_now_init() != 0)
-  {
-    Serial.println("Problem during ESP-NOW init");
-    return;
-  }
-
-  esp_now_register_recv_cb(OnDataRecv);
-}
-
 void setup(void)
 {
-  Serial.begin(9600);
-
-  wifiSetup();
-  macOut();
+  con.setup();
+  con.addFunctionReceive(OnDataRecv);
 
   pinSetup();
 }

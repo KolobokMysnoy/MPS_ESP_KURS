@@ -1,4 +1,4 @@
-#include "Connect.h"
+#include "Connect.hpp"
 
 Connector::Connector(esp_now_role role)
 {
@@ -78,5 +78,24 @@ int Connector::addPeer(uint8_t *peer, esp_now_role role, int timesToTry)
 
 void Connector::addFunctionOnSent(onSentFunc func)
 {
+    // TODO maybe remove
     this->onSentFunc = func;
+    esp_now_register_send_cb(func);
+}
+
+void Connector::addFunctionReceive(onReceiveFunc func)
+{
+    // TODO maybe remove
+    this->receiveFunc = func;
+    esp_now_register_recv_cb(func);
+}
+
+uint8_t *Connector::getMac()
+{
+    uint8_t mac = WIFI.macAddress();
+
+    Serial.print("Mac Address: ");
+    Serial.print(mac);
+
+    return mac;
 }
