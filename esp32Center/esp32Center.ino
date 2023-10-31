@@ -1,21 +1,34 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-typedef struct message {
-    int insideLux;
-    int outsideLux;
-};
-struct message myMessage;
+#include "Additional.hpp"
 
-typedef struct MotorStruct {
-  int percent;
-};
-struct MotorStruct motorStr;
+// block of connections
+#include "../connection/Connect.hpp"
+#include "../sendStructs/sendStructs.hpp"
+
+messageLux myMessage;
+messageDriver motorMsg;
+messageLed msgLed;
+messagePerson messagePerson;
+
+int motorId;
+int ledId;
 
 uint8_t motorAdress[] = {0x84, 0xf3, 0xeb, 0xbf, 0xc0, 0x27};
+// TODO place real macs
+uint8_t ledAdress[] = {x84, 0xf3, 0xeb, 0xbf, 0xc0, 0x27};
+uint8_t personAdress[] = {0x84, 0xf3, 0xeb, 0xbf, 0xc0, 0x27};
+uint8_t luxControlAdress[] = {0x84, 0xf3, 0xeb, 0xbf, 0xc0, 0x27};
+
+Connector con(ESP_NOW_ROLE_CONTROLLER);
 
 // callback function that will be executed when data is received
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
+{
+  if (mac == ledAdress)
+  {
+  }
   memcpy(&myMessage, incomingData, sizeof(myMessage));
   Serial.print("Bytes received: ");
   Serial.println(len);
@@ -26,58 +39,50 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   Serial.println();
 }
 
-void data_sent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void data_sent(const uint8_t *mac_addr, esp_now_send_status_t status)
+{
   Serial.print("\r\nStatus of Last Message Sent:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
-void motorSetup(){
+void motorSetup()
+{
   esp_now_peer_info_t peerInfo = {};
   memcpy(peerInfo.peer_addr, motorAdress, 6);
-  
-  peerInfo.channel = 0;  
-  peerInfo.encrypt = false;     
-  
-  if (esp_now_add_peer(&peerInfo) != ESP_OK){
-    Serial.println("Failed to add peer");
-    // todo delete later
-    while(esp_now_add_peer(&peerInfo) != ESP_OK) {
-      delay(1000);
-    }
-  }
+
+  motorId = con.addPeer(peerInfo);
 }
 
-void setupEsp() {
-  WiFi.mode(WIFI_STA);
+void ledSetup()
+{
+  esp_now_peer_info_t peerInfo = {};
+  memcpy(peerInfo.peer_addr, ledAdress, 6);
 
-  Serial.print("Mac Address: ");
-  Serial.print(WiFi.macAddress());
+  ledId = con.addPeer(peerInfo);
+}
 
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
-  }
+void setupEsp()
+{
+  con.setup();
+  con.addFunctionOnSent(data_sent);
+  con.addFunctionReceive(OnDataRecv);
 
-  esp_now_register_recv_cb(OnDataRecv);
-  esp_now_register_send_cb(data_sent);
-  
   motorSetup();
   Serial.println("ESP-NOW initialized successfully");
 }
 
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
+void setup()
+{
   setupEsp();
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  motorStr.percent = 0;
-  esp_err_t outcome = esp_now_send(motorAdress, (uint8_t *) &motorStr, sizeof(motorStr));
+void loop()
+{
+  motorMsg.percent = 0;
+  con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
   delay(4000);
 
-  motorStr.percent = 100;
-  outcome = esp_now_send(motorAdress, (uint8_t *) &motorStr, sizeof(motorStr));
+  motorMsg.percent = 100;
+  con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
   delay(4000);
 }
