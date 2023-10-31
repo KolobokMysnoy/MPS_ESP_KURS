@@ -1,6 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
-#include "LedCntrl.h"
+#include "LedCntrl.hpp"
 
 const int PinOut = 4;
 const int32 Range = 1024; // For ESP8266, the analogWriteRange is 0-1023
@@ -10,20 +10,19 @@ LedCnrtl led = LedCnrtl(Range, PinOut);
 
 uint8_t peer1[] = {0xB4, 0x8A, 0x0A, 0x89, 0x0F, 0x10};
 
-typedef struct message {
-    int procent;
-};
+messageLed myMessage;
+int previousValue = -1; // Initialize to a value that's out of the valid range
 
-struct message myMessage;
-int previousValue = -1;  // Initialize to a value that's out of the valid range
-
-void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len) {
-  if (data_len == sizeof(myMessage)) {
+void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len)
+{
+  if (data_len == sizeof(myMessage))
+  {
     memcpy(&myMessage, data, sizeof(myMessage));
   }
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
 
   WiFi.mode(WIFI_STA);
@@ -32,7 +31,8 @@ void setup() {
   Serial.print(WiFi.macAddress());
   Serial.println(" ESP-Now Sender");
 
-  if (esp_now_init() != 0) {
+  if (esp_now_init() != 0)
+  {
     Serial.println("Problem during ESP-NOW init");
     return;
   }
@@ -43,9 +43,9 @@ void setup() {
   pinMode(PinOut, OUTPUT);
   analogWriteRange(Range);
   analogWriteFreq(Freq);
-  
 }
 
-void loop() {
+void loop()
+{
   led.setBrightness(myMessage.procent);
 }

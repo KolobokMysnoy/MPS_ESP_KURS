@@ -2,17 +2,18 @@
 #define CURTAINS_CNTRL
 
 #include <Arduino.h>
-#include "motor.h"
+#include "motor.hpp"
 
-class Curtains {
-  MOTOR* mtr;
+class Curtains
+{
+  MOTOR *mtr;
   int pinClosed;
   int pinOpened;
 
   bool operationGoing;
 
 public:
-  Curtains(MOTOR* mtr, int pinClosed, int pinOpened);
+  Curtains(MOTOR *mtr, int pinClosed, int pinOpened);
   bool isNeedClosing;
   bool isNeedOpening;
 

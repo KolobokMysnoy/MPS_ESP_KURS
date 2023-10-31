@@ -1,6 +1,7 @@
-#include "Curtains.h"
+#include "Curtains.hpp"
 
-Curtains::Curtains(MOTOR* mtr, int pinClosed, int pinOpened) {
+Curtains::Curtains(MOTOR *mtr, int pinClosed, int pinOpened)
+{
   this->mtr = mtr;
   this->pinClosed = pinClosed;
   this->pinOpened = pinOpened;
@@ -10,18 +11,22 @@ Curtains::Curtains(MOTOR* mtr, int pinClosed, int pinOpened) {
   isNeedOpening = false;
 }
 
-void Curtains::setNeedClosing() {
+void Curtains::setNeedClosing()
+{
   isNeedClosing = true;
   isNeedOpening = false;
 }
 
-void Curtains::setNeedOpening() {
+void Curtains::setNeedOpening()
+{
   isNeedOpening = true;
   isNeedClosing = false;
 }
 
-void Curtains::open(int timeToWait) {
-  if (operationGoing) {
+void Curtains::open(int timeToWait)
+{
+  if (operationGoing)
+  {
     return;
   }
   operationGoing = true;
@@ -29,9 +34,11 @@ void Curtains::open(int timeToWait) {
   Serial.println("Curtains: Opening");
 
   int isOpened = 0;
-  if (digitalRead(this->pinOpened) != 1) {
+  if (digitalRead(this->pinOpened) != 1)
+  {
     Serial.println("Curtains: isOpened != 1");
-    if (!mtr->isGoing()) {
+    if (!mtr->isGoing())
+    {
       Serial.println("Curtains: Set to backwards");
       mtr->backward();
     }
@@ -42,8 +49,10 @@ void Curtains::open(int timeToWait) {
   operationGoing = false;
 }
 
-void Curtains::close(int timeToWait) {
-  if (operationGoing) {
+void Curtains::close(int timeToWait)
+{
+  if (operationGoing)
+  {
     return;
   }
   operationGoing = true;
@@ -51,9 +60,11 @@ void Curtains::close(int timeToWait) {
   Serial.println("Curtains: Closing");
 
   int isClosed = 0;
-  if (digitalRead(this->pinClosed) != 1) {
+  if (digitalRead(this->pinClosed) != 1)
+  {
     Serial.println("Curtains: isClosed != 1");
-    if (!mtr->isGoing()) {
+    if (!mtr->isGoing())
+    {
       Serial.println("Curtains: Set to forwards");
       mtr->forward();
     }
@@ -64,10 +75,12 @@ void Curtains::close(int timeToWait) {
   operationGoing = false;
 }
 
-bool Curtains::isClosed() {
+bool Curtains::isClosed()
+{
   return digitalRead(this->pinClosed) == 1;
 }
 
-bool Curtains::isOpened() {
+bool Curtains::isOpened()
+{
   return digitalRead(this->pinOpened) == 1;
 }

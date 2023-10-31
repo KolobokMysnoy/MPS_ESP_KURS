@@ -1,16 +1,19 @@
-#include "motor.h"
+#include "motor.hpp"
 
-MOTOR::MOTOR(int pinIn1, int pinIn2) {
+MOTOR::MOTOR(int pinIn1, int pinIn2)
+{
   this->pinIn1 = pinIn1;
   this->pinIn2 = pinIn2;
   isForward = false;
   isBackward = false;
 }
-bool MOTOR::isGoing() {
+bool MOTOR::isGoing()
+{
   return isForward || isBackward;
 }
 
-void MOTOR::forward() {
+void MOTOR::forward()
+{
   Serial.println("Motor: Forward");
 
   isForward = true;
@@ -18,7 +21,8 @@ void MOTOR::forward() {
   digitalWrite(this->pinIn2, LOW);
 }
 
-void MOTOR::backward() {
+void MOTOR::backward()
+{
   Serial.println("Motor: Bacward");
 
   isBackward = true;
@@ -26,7 +30,8 @@ void MOTOR::backward() {
   digitalWrite(this->pinIn2, HIGH);
 }
 
-void MOTOR::stop() {
+void MOTOR::stop()
+{
   Serial.println("Motor: Stop");
   // digitalWrite(this->pinIn1, HIGH);
   // digitalWrite(this->pinIn2, HIGH);

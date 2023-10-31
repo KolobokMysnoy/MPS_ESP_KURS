@@ -1,14 +1,16 @@
-#include "LedCntrl.h"
+#include "LedCntrl.hpp"
 
-
-LedCnrtl::LedCnrtl(int range, int pinOut) {
+LedCnrtl::LedCnrtl(int range, int pinOut)
+{
   this->currentBrightness = 0;
   this->rangeOutput = range;
   this->pinOut = pinOut;
 }
 
-void LedCnrtl::setBrightness(int brightness) {
-  if (this->currentBrightness == brightness) {
+void LedCnrtl::setBrightness(int brightness)
+{
+  if (this->currentBrightness == brightness)
+  {
     return;
   }
 
