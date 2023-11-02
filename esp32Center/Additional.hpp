@@ -27,4 +27,25 @@ int getMotorPercent(int outsideLux, int insideLux)
     return 0;
 }
 
+template <typename T, size_t N>
+bool arraysEqual(const T (&arr1)[N], const T (&arr2)[N]) {
+    for (size_t i = 0; i < N; ++i) {
+        if (arr1[i] != arr2[i]) {
+            return false; 
+        }
+    }
+    return true;
+}
+
+
+template <typename T, size_t N>
+void printArray(const T (&arr)[N]) {
+    for (size_t i = 0; i < N; ++i) {
+        Serial.print(arr[i], HEX);
+        Serial.print(":");
+    }
+    Serial.println("");
+}
+
+
 #endif

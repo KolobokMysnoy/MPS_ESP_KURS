@@ -4,7 +4,7 @@
 #include "../connection/Connect.hpp"
 #include "../sendStructs/sendStructs.hpp"
 
-const int PinOut = 4;
+const int PinOut = 4; //D2
 const int32 Range = 1024; // For ESP8266, the analogWriteRange is 0-1023
 const int32 Freq = 1000;  // Set a lower frequency, e.g., 1 kHz
 
@@ -37,5 +37,11 @@ void setup()
 
 void loop()
 {
-  led.setBrightness(myMessage.procent);
+  // led.setBrightness(myMessage.procent);
+
+  //todo 
+  led.setBrightness(100);
+  delay(2000);
+  led.setBrightness(50);
+  delay(2000);
 }

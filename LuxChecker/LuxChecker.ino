@@ -2,9 +2,9 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <espnow.h>
-#include "Lux.h"
-#include "../connection/Connect.hpp"
-#include "../sendStructs/sendStructs.hpp"
+#include "Lux.hpp"
+#include "Connect.hpp"
+#include "sendStructs.hpp"
 
 // Parameters
 const int Analog_Pin = 0;  // Analog pin A0

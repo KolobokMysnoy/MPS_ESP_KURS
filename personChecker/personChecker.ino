@@ -8,9 +8,9 @@
 // Parameters
 const int ReadPin = 5; // D1
 
-// TODO
-// unsigned long timeWithoutPerson = 15 * 60 * 1000;
-unsigned long timeWithoutPerson = 15 * 1000;
+// 15 minute without person to think that room is empty
+unsigned long timeWithoutPerson = 15 * 60 * 1000;
+// With this period sends message to hub
 unsigned long timePeriodSend = 30 * 1000;
 
 volatile unsigned long lastTime;
@@ -27,7 +27,7 @@ Connector con = Connector(ESP_NOW_ROLE_SLAVE);
 ICACHE_RAM_ATTR void movement_detection() {
   valueInteupt = digitalRead(ReadPin);
   if (valueInteupt) {
-    Serial.print("Person in room");
+    Serial.println("Person in room");
     
     lastTime = millis();
     personMsg.isPersonInside = true;
@@ -50,6 +50,7 @@ int absoluteValue(int num)
 void setup(void)
 {
   con.setup();
+  con.getMac();
   idOfHub = con.addPeer(peer1);
 
   pinMode(ReadPin, INPUT);
@@ -69,12 +70,16 @@ void loop(void)
     } else {
       Serial.println("Person not in room");
       personMsg.isPersonInside = false;
+      
       lastSend = millis();
+      
+      Serial.println("Send to hub");
       con.sendData(idOfHub, (uint8_t *)&personMsg, sizeof(personMsg));
     }
   }
 
   if (absoluteValue(lastSend - millis()) > timePeriodSend) {
+    Serial.println("Send to hub");
     lastSend = millis();
     con.sendData(idOfHub, (uint8_t *)&personMsg, sizeof(personMsg));
   }
