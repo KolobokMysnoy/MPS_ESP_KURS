@@ -38,7 +38,7 @@ void Curtains::setNeedOpening()
 bool Curtains::isCanBeOperated(int timeToWait)
 {
   // check if from last call time pass
-  if (abs(this->lastChecked - millis()) < timeToWait)
+  if (std::abs(static_cast<long>((this->lastChecked - millis()))) < timeToWait)
   {
     Serial.println("Curtains.isCanBeOperated: timeToWait is more than passed");
     return false;

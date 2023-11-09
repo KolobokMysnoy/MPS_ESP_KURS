@@ -5,6 +5,8 @@
 #include "sendStructs.hpp"
 #include "Connect.hpp"
 
+#include <cmath>
+
 // Parameters
 const int ReadPin = 5; // D1
 
@@ -51,7 +53,7 @@ void setup(void)
 
 void loop(void)
 {
-  if (personMsg.isPersonInside && abs(lastTime - millis()) > timeWithoutPerson)
+  if (personMsg.isPersonInside && std::abs(static_cast<long>(lastTime - millis())) > timeWithoutPerson)
   {
     // if person always in room than pin won't trigger interrupt
     if (digitalRead(ReadPin))
@@ -70,7 +72,7 @@ void loop(void)
     }
   }
 
-  if (abs(lastSend - millis()) > timePeriodSend)
+  if (std::abs(static_cast<long>(lastSend - millis())) > timePeriodSend)
   {
     Serial.println("Send to hub");
     lastSend = millis();

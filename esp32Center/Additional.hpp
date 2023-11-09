@@ -2,6 +2,7 @@
 #define Additional
 
 #include <Arduino.h>
+#include <cmath>
 
 const int luxAccuracy = 10;
 
@@ -20,7 +21,7 @@ int getLedPercent(int insideLux, int needLux, int currentPerc, int maxLuxOfLed)
     }
 
     // If the current light level is inside needed range return -1
-    if (abs(insideLux - needLux) < luxAccuracy)
+    if (std::abs(insideLux - needLux) < luxAccuracy)
     {
         return -1;
     }
