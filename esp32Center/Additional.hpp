@@ -3,22 +3,41 @@
 
 #include <Arduino.h>
 
-const int needLuxInside = 300;
+const int luxAccuracy = 10;
 
-int getLedPercent(int insideLux, int needLux = needLuxInside)
+// Return value to set to be match to need lux
+// if already at need lux then return -1
+int getLedPercent(int insideLux, int needLux, int currentPerc, int maxLuxOfLed)
 {
-    // TODO Think about this method
-    if (needLux > insideLux)
+    static int percWithOnlyLed = 0;
+    if (percWithOnlyLed == 0)
     {
-        return 100;
+        float percentToSet = (static_cast<float>(needLux) /
+                              (maxLuxOfLed - needLux)) *
+                             100;
+
+        percWithOnlyLed = static_cast<int>(min(percentToSet, static_cast<float>(100.0)));
     }
 
+    // If the current light level is inside needed range return -1
+    if (abs(insideLux - needLux) < luxAccuracy)
+    {
+        return -1;
+    }
+
+    // If need lux is more than inside lux than turn on the led
+    if (needLux - insideLux > 0)
+    {
+        return percWithOnlyLed;
+    }
+
+    // if need lux is less than inside lux turn off the led
     return 0;
 }
 
+// Return percent of outside
 int getMotorPercent(int outsideLux, int insideLux)
 {
-    // TODO Think about this method
     if (outsideLux < insideLux)
     {
         return 100;
@@ -27,24 +46,17 @@ int getMotorPercent(int outsideLux, int insideLux)
     return 0;
 }
 
-
 template <typename T, size_t N>
-bool arraysEqual(const T (&arr1)[N], const T (&arr2)[N]) {
-    for (size_t i = 0; i < N; ++i) {
-        if (arr1[i] != arr2[i]) {
-            return false; 
+bool arraysEqual(const T (&arr1)[N], const T (&arr2)[N])
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (arr1[i] != arr2[i])
+        {
+            return false;
         }
     }
     return true;
-}
-
-template <typename T, size_t N>
-void printArray(const T (&arr)[N]) {
-    for (size_t i = 0; i < N; ++i) {
-        Serial.print(arr[i], HEX);
-        Serial.print(":");
-    }
-    Serial.println("");
 }
 
 #endif

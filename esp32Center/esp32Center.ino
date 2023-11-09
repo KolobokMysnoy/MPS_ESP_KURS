@@ -3,6 +3,7 @@
 // block of connections
 #include "Connect32.hpp"
 #include "sendStructs.hpp"
+#include "consoleOut.hpp"
 
 messageLux myMessage;
 messageDriver motorMsg;
@@ -12,15 +13,18 @@ messagePerson msgPers;
 int motorId;
 int ledId;
 
+// Macs of other ESP
 const uint8_t sizeOfMac = 6;
 uint8_t motorAdress[] = {0x84, 0xf3, 0xeb, 0xbf, 0xc0, 0x27};
 uint8_t luxControlAdress[] = {0x84, 0xf3, 0xeb, 0xb6, 0xbd, 0xf4};
 uint8_t personAdress[] = {0x84, 0xf3, 0xeb, 0x01, 0x7f, 0xf9};
-
-// TODO place real macs
 uint8_t ledAdress[] = {0xec, 0xfa, 0xbc, 0xc9, 0x6a, 0x11};
 
 Connector con;
+
+int needLux = 300;
+int maxLux = 0;
+uint8_t initialConfLux = 0;
 
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
@@ -28,23 +32,13 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   uint8_t macArr[sizeOfMac];
   memcpy(macArr, mac, sizeOfMac);
 
-  Serial.print("Receive some data from mac");
-  printArray(macArr);
+  outputMacLen(len, macArr);
 
   if (arraysEqual(macArr, personAdress))
   {
     // From person sensor data
     memcpy(&msgPers, incomingData, sizeof(msgPers));
-    
-    Serial.print("Bytes received: ");
-    Serial.println(len);
-    Serial.print("Person ");
-    if (msgPers.isPersonInside == 1) {
-      Serial.println("inside room");
-    } else {
-      Serial.println("outside room");
-    }
-    Serial.println();
+    outputPerson(msgPers.isPersonInside);
 
     return;
   }
@@ -52,28 +46,40 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   {
     // From light sensors data
     memcpy(&myMessage, incomingData, sizeof(myMessage));
-    
-    Serial.print("Bytes received: ");
-    Serial.println(len);
-    Serial.print("inside: ");
-    Serial.println(myMessage.insideLux);
-    Serial.print("Outsude: ");
-    Serial.println(myMessage.outsideLux);
-    Serial.println();
-    
-    if (msgPers.isPersonInside) {
-      // If person inside then regulate lux else do nothing
-      msgLed.procent = getLedPercent(myMessage.insideLux);
-    } else {
-      // Person not in room
-      // off led
+
+    outputLux(myMessage.insideLux, myMessage.outsideLux);
+
+    if (msgPers.isPersonInside)
+    {
+      if (initialConfLux == 1)
+      {
+        maxLux = myMessage.insideLux;
+
+        if (maxLux < needLux)
+        {
+          needLux = maxLux;
+        }
+        initialConfLux = 2;
+      }
+
+      int tmpPerc = getLedPercent(myMessage.insideLux, needLux, msgLed.procent, maxLux);
+      if (tmpPerc != -1)
+      {
+        msgLed.procent = tmpPerc;
+      }
+    }
+    else
+    {
+      // Person not in room. Off led
       msgLed.procent = 0;
     }
+
     con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
 
     int tmpMtr = getMotorPercent(myMessage.outsideLux, myMessage.insideLux);
-    if (tmpMtr != motorMsg.procent) {
-      // if motor not in place already 
+    if (tmpMtr != motorMsg.procent)
+    {
+      // if motor not in place already
       motorMsg.procent = tmpMtr;
       con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
     }
@@ -118,6 +124,15 @@ void setup()
 
 void loop()
 {
+
+  // Send 100 to config
+  if (initialConfLux == 0)
+  {
+    msgLed.procent = 100;
+    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+    initialConfLux = 1;
+  }
+
   motorMsg.procent = 0;
   con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
   msgLed.procent = 0;

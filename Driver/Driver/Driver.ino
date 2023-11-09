@@ -8,8 +8,8 @@
 #include "Curtains.hpp"
 
 // block of connections
-#include "./ESP-NOW/Connect.hpp"
-#include "./ESP-NOW/sendStructs.hpp"
+#include "Connect.hpp"
+#include "sendStructs.hpp"
 
 const int MaxValue = 512;
 
@@ -37,7 +37,7 @@ void OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
   memcpy(&myMessage, incomingData, sizeof(myMessage));
 
   Serial.print("Get message with driver percent");
-  Serial.println(myMessage.percent);
+  Serial.println(myMessage.procent);
 
   switch (myMessage.procent)
   {

@@ -21,11 +21,6 @@ class Curtains
   // Check if curtains is closed
   bool isOpened();
 
-  // Set that need closing
-  void setNeedClosing();
-  // Set that need opening
-  void setNeedOpening();
-
   // check if can operate motor
   // Modify operationGoing inside function
   bool isCanBeOperated(int timeToWait);
@@ -33,6 +28,11 @@ class Curtains
 public:
   // Set motor to what control and pins to check
   Curtains(MOTOR *mtr, int pinClosed, int pinOpened);
+
+  // Set that need closing
+  void setNeedClosing();
+  // Set that need opening
+  void setNeedOpening();
 
   // Check if need closing
   bool getNeedClosing();
