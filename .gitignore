@@ -1,0 +1,25 @@
+# Ignore Connect32.hpp Connect32.cpp Connect.cpp Connect.hpp sendStructs.hpp in all directories
+**/Connect32.hpp
+**/Connect32.cpp
+**/Connect.cpp
+**/Connect.hpp
+**/sendStructs.hpp
+
+# Except in the following directories
+!connection/esp8266/Connect32.hpp
+!connection/esp8266/Connect32.cpp
+!connection/esp8266/Connect.cpp
+!connection/esp8266/Connect.hpp
+!connection/esp8266/sendStructs.hpp
+
+!connection/esp32/Connect32.hpp
+!connection/esp32/Connect32.cpp
+!connection/esp32/Connect.cpp
+!connection/esp32/Connect.hpp
+!connection/esp32/sendStructs.hpp
+
+!sendStructs/Connect32.hpp
+!sendStructs/Connect32.cpp
+!sendStructs/Connect.cpp
+!sendStructs/Connect.hpp
+!sendStructs/sendStructs.hpp
