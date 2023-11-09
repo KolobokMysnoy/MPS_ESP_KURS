@@ -1,17 +1,5 @@
 #include "Curtains.hpp"
 
-int absoluteValue(int num)
-{
-  if (num < 0)
-  {
-    return -num;
-  }
-  else
-  {
-    return num;
-  }
-}
-
 Curtains::Curtains(MOTOR *mtr, int pinClosed, int pinOpened)
 {
   this->mtr = mtr;
@@ -50,7 +38,7 @@ void Curtains::setNeedOpening()
 bool Curtains::isCanBeOperated(int timeToWait)
 {
   // check if from last call time pass
-  if (absoluteValue(this->lastChecked - millis()) < timeToWait)
+  if (abs(this->lastChecked - millis()) < timeToWait)
   {
     Serial.println("Curtains.isCanBeOperated: timeToWait is more than passed");
     return false;

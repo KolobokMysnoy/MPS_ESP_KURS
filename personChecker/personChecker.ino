@@ -36,18 +36,6 @@ ICACHE_RAM_ATTR void movement_detection()
   }
 }
 
-int absoluteValue(int num)
-{
-  if (num < 0)
-  {
-    return -num;
-  }
-  else
-  {
-    return num;
-  }
-}
-
 void setup(void)
 {
   con.setup();
@@ -63,7 +51,7 @@ void setup(void)
 
 void loop(void)
 {
-  if (personMsg.isPersonInside && absoluteValue(lastTime - millis()) > timeWithoutPerson)
+  if (personMsg.isPersonInside && abs(lastTime - millis()) > timeWithoutPerson)
   {
     // if person always in room than pin won't trigger interrupt
     if (digitalRead(ReadPin))
@@ -82,7 +70,7 @@ void loop(void)
     }
   }
 
-  if (absoluteValue(lastSend - millis()) > timePeriodSend)
+  if (abs(lastSend - millis()) > timePeriodSend)
   {
     Serial.println("Send to hub");
     lastSend = millis();
