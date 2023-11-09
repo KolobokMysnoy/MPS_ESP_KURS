@@ -14,6 +14,8 @@ class Curtains
   bool isNeedClosing;
   bool isNeedOpening;
 
+  unsigned long lastChecked;
+
   // Check if curtains is opened
   bool isClosed();
   // Check if curtains is closed
@@ -23,6 +25,10 @@ class Curtains
   void setNeedClosing();
   // Set that need opening
   void setNeedOpening();
+
+  // check if can operate motor
+  // Modify operationGoing inside function
+  bool isCanBeOperated(int timeToWait);
 
 public:
   // Set motor to what control and pins to check

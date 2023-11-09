@@ -24,15 +24,16 @@ int idOfHub;
 uint8_t peer1[] = {0xB4, 0x8A, 0x0A, 0x89, 0x0F, 0x10};
 Connector con = Connector(ESP_NOW_ROLE_SLAVE);
 
-ICACHE_RAM_ATTR void movement_detection() {
+ICACHE_RAM_ATTR void movement_detection()
+{
   valueInteupt = digitalRead(ReadPin);
-  if (valueInteupt) {
+  if (valueInteupt)
+  {
     Serial.println("Person in room");
-    
+
     lastTime = millis();
     personMsg.isPersonInside = true;
   }
-  
 }
 
 int absoluteValue(int num)
@@ -65,20 +66,24 @@ void loop(void)
   if (personMsg.isPersonInside && absoluteValue(lastTime - millis()) > timeWithoutPerson)
   {
     // if person always in room than pin won't trigger interrupt
-    if (digitalRead(ReadPin)) {
+    if (digitalRead(ReadPin))
+    {
       lastTime = millis();
-    } else {
+    }
+    else
+    {
       Serial.println("Person not in room");
       personMsg.isPersonInside = false;
-      
+
       lastSend = millis();
-      
+
       Serial.println("Send to hub");
       con.sendData(idOfHub, (uint8_t *)&personMsg, sizeof(personMsg));
     }
   }
 
-  if (absoluteValue(lastSend - millis()) > timePeriodSend) {
+  if (absoluteValue(lastSend - millis()) > timePeriodSend)
+  {
     Serial.println("Send to hub");
     lastSend = millis();
     con.sendData(idOfHub, (uint8_t *)&personMsg, sizeof(personMsg));

@@ -4,19 +4,30 @@ MOTOR::MOTOR(int pinIn1, int pinIn2)
 {
   this->pinIn1 = pinIn1;
   this->pinIn2 = pinIn2;
-  isForward = false;
-  isBackward = false;
+  this->isGoingForward = false;
+  this->isGoingBackward = false;
 }
+
 bool MOTOR::isGoing()
 {
-  return isForward || isBackward;
+  return this->isGoingForward || this->isGoingBackward;
 }
 
 void MOTOR::forward()
 {
   Serial.println("Motor: Forward");
+  if (this->isGoingForward)
+  {
+    return;
+  }
 
-  isForward = true;
+  if (this->isGoingBackward)
+  {
+    Serial.println("Motor.Forward: Stop motor");
+    this->stop();
+  }
+
+  this->isGoingForward = true;
   digitalWrite(this->pinIn1, HIGH);
   digitalWrite(this->pinIn2, LOW);
 }
@@ -24,8 +35,18 @@ void MOTOR::forward()
 void MOTOR::backward()
 {
   Serial.println("Motor: Bacward");
+  if (this->isGoingBackward)
+  {
+    return;
+  }
 
-  isBackward = true;
+  if (this->isGoingForward)
+  {
+    Serial.println("Motor.Bacward: Stop motor");
+    this->stop();
+  }
+
+  isGoingBackward = true;
   digitalWrite(this->pinIn1, LOW);
   digitalWrite(this->pinIn2, HIGH);
 }
@@ -33,14 +54,10 @@ void MOTOR::backward()
 void MOTOR::stop()
 {
   Serial.println("Motor: Stop");
-  // digitalWrite(this->pinIn1, HIGH);
-  // digitalWrite(this->pinIn2, HIGH);
-
-  // delay(5);
 
   digitalWrite(this->pinIn1, LOW);
   digitalWrite(this->pinIn2, LOW);
 
-  isForward = false;
-  isBackward = false;
+  isGoingForward = false;
+  isGoingBackward = false;
 }

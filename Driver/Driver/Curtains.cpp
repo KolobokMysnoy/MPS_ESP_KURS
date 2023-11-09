@@ -1,5 +1,17 @@
 #include "Curtains.hpp"
 
+int absoluteValue(int num)
+{
+  if (num < 0)
+  {
+    return -num;
+  }
+  else
+  {
+    return num;
+  }
+}
+
 Curtains::Curtains(MOTOR *mtr, int pinClosed, int pinOpened)
 {
   this->mtr = mtr;
@@ -7,9 +19,10 @@ Curtains::Curtains(MOTOR *mtr, int pinClosed, int pinOpened)
   this->pinOpened = pinOpened;
 
   // default values
-  operationGoing = false;
-  isNeedClosing = false;
-  isNeedOpening = false;
+  this->operationGoing = false;
+  this->isNeedClosing = false;
+  this->isNeedOpening = false;
+  this->lastChecked = 0;
 }
 
 bool Curtains::getNeedClosing()
@@ -24,66 +37,76 @@ bool Curtains::getNeedOpening()
 
 void Curtains::setNeedClosing()
 {
-  isNeedClosing = true;
-  isNeedOpening = false;
+  this->isNeedClosing = true;
+  this->isNeedOpening = false;
 }
 
 void Curtains::setNeedOpening()
 {
-  isNeedOpening = true;
-  isNeedClosing = false;
+  this->isNeedOpening = true;
+  this->isNeedClosing = false;
+}
+
+bool Curtains::isCanBeOperated(int timeToWait)
+{
+  // check if from last call time pass
+  if (absoluteValue(this->lastChecked - millis()) < timeToWait)
+  {
+    Serial.println("Curtains.isCanBeOperated: timeToWait is more than passed");
+    return false;
+  }
+
+  // if operation was started before
+  if (this->operationGoing)
+  {
+    this->operationGoing = false;
+    mtr->stop();
+    return false;
+  }
+
+  return true;
 }
 
 void Curtains::open(int timeToWait)
 {
-  if (operationGoing)
+  if (!this->isCanBeOperated(timeToWait))
   {
     return;
   }
+
+  Serial.println("Curtains.open: Opening");
+
+  this->lastChecked = millis();
   operationGoing = true;
 
-  Serial.println("Curtains: Opening");
-
-  int isOpened = 0;
   if (digitalRead(this->pinOpened) != 1)
   {
-    Serial.println("Curtains: isOpened != 1");
-    if (!mtr->isGoing())
-    {
-      Serial.println("Curtains: Set to backwards");
-      mtr->backward();
-    }
-    delay(timeToWait);
-  }
+    Serial.println("Curtains.open: curains is closed");
+    Serial.println("Curtains.open: Set to backwards");
 
-  mtr->stop();
-  operationGoing = false;
+    mtr->backward();
+  }
 }
 
 void Curtains::close(int timeToWait)
 {
-  if (operationGoing)
+  if (!this->isCanBeOperated(timeToWait))
   {
     return;
   }
-  operationGoing = true;
 
   Serial.println("Curtains: Closing");
 
-  int isClosed = 0;
+  this->lastChecked = millis();
+  operationGoing = true;
+
   if (digitalRead(this->pinClosed) != 1)
   {
-    Serial.println("Curtains: isClosed != 1");
-    if (!mtr->isGoing())
-    {
-      Serial.println("Curtains: Set to forwards");
-      mtr->forward();
-    }
-    delay(timeToWait);
-  }
+    Serial.println("Curtains.close: curains is opened");
+    Serial.println("Curtains.close: Set to forwards");
 
-  mtr->stop();
-  operationGoing = false;
+    mtr->forward();
+  }
 }
 
 bool Curtains::isClosed()
