@@ -1,10 +1,10 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 #include "LedCntrl.hpp"
-#include "../connection/Connect.hpp"
-#include "../sendStructs/sendStructs.hpp"
+#include "Connect.hpp"
+#include "sendStructs.hpp"
 
-const int PinOut = 4; //D2
+const int PinOut = 4;     // D2
 const int32 Range = 1024; // For ESP8266, the analogWriteRange is 0-1023
 const int32 Freq = 1000;  // Set a lower frequency, e.g., 1 kHz
 
@@ -22,6 +22,9 @@ void OnDataRecv(uint8_t *mac_addr, uint8_t *data, uint8_t data_len)
   if (data_len == sizeof(myMessage))
   {
     memcpy(&myMessage, data, sizeof(myMessage));
+
+    Serial.print("Get message with procent:");
+    Serial.println(myMessage.procent);
   }
 }
 
@@ -29,7 +32,8 @@ void setup()
 {
   con.setup();
   con.addFunctionReceive(OnDataRecv);
-
+  con.getMac();
+  
   pinMode(PinOut, OUTPUT);
   analogWriteRange(Range);
   analogWriteFreq(Freq);
@@ -37,11 +41,5 @@ void setup()
 
 void loop()
 {
-  // led.setBrightness(myMessage.procent);
-
-  //todo 
-  led.setBrightness(100);
-  delay(2000);
-  led.setBrightness(50);
-  delay(2000);
+  led.setBrightness(myMessage.procent);
 }

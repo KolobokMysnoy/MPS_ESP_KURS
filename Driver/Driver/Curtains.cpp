@@ -6,9 +6,20 @@ Curtains::Curtains(MOTOR *mtr, int pinClosed, int pinOpened)
   this->pinClosed = pinClosed;
   this->pinOpened = pinOpened;
 
+  // default values
   operationGoing = false;
   isNeedClosing = false;
   isNeedOpening = false;
+}
+
+bool Curtains::getNeedClosing()
+{
+  return this->isNeedClosing && !this->isClosed();
+}
+
+bool Curtains::getNeedOpening()
+{
+  return this->isNeedOpening && !this->isOpened();
 }
 
 void Curtains::setNeedClosing()

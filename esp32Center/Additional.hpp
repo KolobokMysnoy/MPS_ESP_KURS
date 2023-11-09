@@ -5,10 +5,10 @@
 
 const int needLuxInside = 300;
 
-int getLedPercent(int insideLux)
+int getLedPercent(int insideLux, int needLux = needLuxInside)
 {
     // TODO Think about this method
-    if (needLuxInside > insideLux)
+    if (needLux > insideLux)
     {
         return 100;
     }
@@ -27,6 +27,7 @@ int getMotorPercent(int outsideLux, int insideLux)
     return 0;
 }
 
+
 template <typename T, size_t N>
 bool arraysEqual(const T (&arr1)[N], const T (&arr2)[N]) {
     for (size_t i = 0; i < N; ++i) {
@@ -37,7 +38,6 @@ bool arraysEqual(const T (&arr1)[N], const T (&arr2)[N]) {
     return true;
 }
 
-
 template <typename T, size_t N>
 void printArray(const T (&arr)[N]) {
     for (size_t i = 0; i < N; ++i) {
@@ -46,6 +46,5 @@ void printArray(const T (&arr)[N]) {
     }
     Serial.println("");
 }
-
 
 #endif

@@ -18,7 +18,7 @@ uint8_t luxControlAdress[] = {0x84, 0xf3, 0xeb, 0xb6, 0xbd, 0xf4};
 uint8_t personAdress[] = {0x84, 0xf3, 0xeb, 0x01, 0x7f, 0xf9};
 
 // TODO place real macs
-uint8_t ledAdress[] = {0x84, 0xf3, 0xeb, 0xbf, 0xc0, 0x27};
+uint8_t ledAdress[] = {0xec, 0xfa, 0xbc, 0xc9, 0x6a, 0x11};
 
 Connector con;
 
@@ -61,6 +61,23 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     Serial.println(myMessage.outsideLux);
     Serial.println();
     
+    if (msgPers.isPersonInside) {
+      // If person inside then regulate lux else do nothing
+      msgLed.procent = getLedPercent(myMessage.insideLux);
+    } else {
+      // Person not in room
+      // off led
+      msgLed.procent = 0;
+    }
+    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+
+    int tmpMtr = getMotorPercent(myMessage.outsideLux, myMessage.insideLux);
+    if (tmpMtr != motorMsg.procent) {
+      // if motor not in place already 
+      motorMsg.procent = tmpMtr;
+      con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
+    }
+
     return;
   }
 }
@@ -103,9 +120,13 @@ void loop()
 {
   motorMsg.procent = 0;
   con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
+  msgLed.procent = 0;
+  con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
   delay(4000);
 
   motorMsg.procent = 100;
   con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
+  msgLed.procent = 100;
+  con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
   delay(4000);
 }

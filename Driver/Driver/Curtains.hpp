@@ -11,20 +11,32 @@ class Curtains
   int pinOpened;
 
   bool operationGoing;
-
-public:
-  Curtains(MOTOR *mtr, int pinClosed, int pinOpened);
   bool isNeedClosing;
   bool isNeedOpening;
 
+  // Check if curtains is opened
+  bool isClosed();
+  // Check if curtains is closed
+  bool isOpened();
+
+  // Set that need closing
   void setNeedClosing();
+  // Set that need opening
   void setNeedOpening();
 
-  void open(int timeToWait);
-  void close(int timeToWait);
+public:
+  // Set motor to what control and pins to check
+  Curtains(MOTOR *mtr, int pinClosed, int pinOpened);
 
-  bool isClosed();
-  bool isOpened();
+  // Check if need closing
+  bool getNeedClosing();
+  // Check if need opening
+  bool getNeedOpening();
+
+  // Open curtains
+  void open(int timeToWait);
+  // Close curtains
+  void close(int timeToWait);
 };
 
 #endif
