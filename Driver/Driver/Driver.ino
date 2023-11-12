@@ -76,14 +76,14 @@ void loop(void)
   {
     curt.close(timeToWait);
   }
-  
 
   if (curt.getNeedOpening())
   {
     curt.open(timeToWait);
   }
 
-  if (!(curt.getNeedOpening() || curt.getNeedClosing())) {
+  if (!(curt.getNeedOpening() || curt.getNeedClosing()))
+  {
     curt.stop();
   }
 }

@@ -14,7 +14,7 @@ const int ReadPin = 5; // D1
 // unsigned long timeWithoutPerson = 15 * 60 * 1000;
 unsigned long timeWithoutPerson = 15 * 1000; // 15 sec
 // TODO fix time to wait back to 15 minutes
-// With this period sends message to hub 
+// With this period sends message to hub
 unsigned long timePeriodSend = 5 * 1000;
 
 volatile unsigned long lastTime;

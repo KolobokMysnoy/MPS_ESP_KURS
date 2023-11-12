@@ -65,7 +65,7 @@ void Curtains::open(int timeToWait)
     return;
   }
   this->isStopped = false;
-  
+
   Serial.println("Curtains.open: Opening");
 
   this->lastChecked = millis();
@@ -115,7 +115,7 @@ bool Curtains::isOpened()
 void Curtains::stop()
 {
   // if stopped already leave
-  if (this->isStopped) 
+  if (this->isStopped)
   {
     return;
   }
