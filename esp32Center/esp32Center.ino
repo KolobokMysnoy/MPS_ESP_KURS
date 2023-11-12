@@ -22,8 +22,8 @@ uint8_t ledAdress[] = {0xec, 0xfa, 0xbc, 0xc9, 0x6a, 0x11};
 
 Connector con;
 
-int needLux = 300;
-int maxLux = 0;
+int needLux = 64;
+int maxLux = needLux  ;
 uint8_t initialConfLux = 0;
 
 // callback function that will be executed when data is received
@@ -49,18 +49,25 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 
     outputLux(myMessage.insideLux, myMessage.outsideLux);
 
-    if (msgPers.isPersonInside)
+    if (initialConfLux == 1)
     {
-      if (initialConfLux == 1)
-      {
         maxLux = myMessage.insideLux;
-
         if (maxLux < needLux)
         {
           needLux = maxLux;
         }
         initialConfLux = 2;
-      }
+
+        Serial.println("--------------------------------------------------");
+        Serial.print("max == ");
+        Serial.println(maxLux);
+        Serial.print("need == ");
+        Serial.println(needLux);
+    }
+
+    
+    if (msgPers.isPersonInside)
+    {
 
       int tmpPerc = getLedPercent(myMessage.insideLux, needLux, msgLed.procent, maxLux);
       if (tmpPerc != -1)
@@ -75,6 +82,9 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     }
 
     con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+
+    Serial.print("Data send to led ==");
+    Serial.println(msgLed.procent);
 
     int tmpMtr = getMotorPercent(myMessage.outsideLux, myMessage.insideLux);
     if (tmpMtr != motorMsg.procent)
@@ -119,7 +129,12 @@ void setupEsp()
 
 void setup()
 {
+  Serial.begin(9600);
+  Serial.print("Seial begin");
+  
   setupEsp();
+
+  Serial.print("Seial end");
 }
 
 void loop()
@@ -128,20 +143,21 @@ void loop()
   // Send 100 to config
   if (initialConfLux == 0)
   {
+    Serial.println("First intial conflux");
     msgLed.procent = 100;
     con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
     initialConfLux = 1;
   }
 
-  motorMsg.procent = 0;
-  con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
-  msgLed.procent = 0;
-  con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
-  delay(4000);
+  // motorMsg.procent = 0;
+  // con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
+  // msgLed.procent = 0;
+  // con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+  // delay(4000);
 
-  motorMsg.procent = 100;
-  con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
-  msgLed.procent = 100;
-  con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
-  delay(4000);
+  // motorMsg.procent = 100;
+  // con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
+  // msgLed.procent = 100;
+  // con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+  // delay(4000);
 }

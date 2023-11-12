@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <cmath>
 
-const int luxAccuracy = 10;
+const int luxAccuracy = 2;
 
 // Return value to set to be match to need lux
 // if already at need lux then return -1

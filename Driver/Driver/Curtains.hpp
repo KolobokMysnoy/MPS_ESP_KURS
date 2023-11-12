@@ -10,6 +10,7 @@ class Curtains
   int pinClosed;
   int pinOpened;
 
+  bool isStopped;
   bool operationGoing;
   bool isNeedClosing;
   bool isNeedOpening;
@@ -43,6 +44,9 @@ public:
   void open(int timeToWait);
   // Close curtains
   void close(int timeToWait);
+
+  // stop all operations from working
+  void stop();
 };
 
 #endif

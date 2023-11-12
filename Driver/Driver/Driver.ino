@@ -14,14 +14,14 @@
 const int MaxValue = 512;
 
 // Motor control
-const int PinIn1 = 5; // D1
-const int PinIn2 = 4; // D2
+const int PinIn1 = 4; // D1
+const int PinIn2 = 5; // D2
 
 // Check for close or open
 const int PinClosed = 14; // D5
 const int PinOpened = 12; // D6
 
-int timeToWait = 600;
+int timeToWait = 500;
 
 // Init motor and curtains to control motor
 MOTOR motor = MOTOR(PinIn1, PinIn2);
@@ -67,6 +67,7 @@ void setup(void)
 
   con.setup();
   con.addFunctionReceive(OnDataRecv);
+  con.getMac();
 }
 
 void loop(void)
@@ -75,11 +76,14 @@ void loop(void)
   {
     curt.close(timeToWait);
   }
+  
 
   if (curt.getNeedOpening())
   {
     curt.open(timeToWait);
   }
 
-  delay(timeToWait);
+  if (!(curt.getNeedOpening() || curt.getNeedClosing())) {
+    curt.stop();
+  }
 }

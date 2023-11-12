@@ -37,6 +37,8 @@ void Curtains::setNeedOpening()
 
 bool Curtains::isCanBeOperated(int timeToWait)
 {
+  Serial.println("Curtains.isCanBeOperated:");
+  Serial.println(static_cast<long>((this->lastChecked - millis())));
   // check if from last call time pass
   if (std::abs(static_cast<long>((this->lastChecked - millis()))) < timeToWait)
   {
@@ -49,6 +51,7 @@ bool Curtains::isCanBeOperated(int timeToWait)
   {
     this->operationGoing = false;
     mtr->stop();
+
     return false;
   }
 
@@ -61,13 +64,14 @@ void Curtains::open(int timeToWait)
   {
     return;
   }
-
+  this->isStopped = false;
+  
   Serial.println("Curtains.open: Opening");
 
   this->lastChecked = millis();
   operationGoing = true;
 
-  if (digitalRead(this->pinOpened) != 1)
+  if (!this->isOpened())
   {
     Serial.println("Curtains.open: curains is closed");
     Serial.println("Curtains.open: Set to backwards");
@@ -82,13 +86,14 @@ void Curtains::close(int timeToWait)
   {
     return;
   }
+  this->isStopped = false;
 
   Serial.println("Curtains: Closing");
 
   this->lastChecked = millis();
   operationGoing = true;
 
-  if (digitalRead(this->pinClosed) != 1)
+  if (!this->isClosed())
   {
     Serial.println("Curtains.close: curains is opened");
     Serial.println("Curtains.close: Set to forwards");
@@ -105,4 +110,23 @@ bool Curtains::isClosed()
 bool Curtains::isOpened()
 {
   return digitalRead(this->pinOpened) == 1;
+}
+
+void Curtains::stop()
+{
+  // if stopped already leave
+  if (this->isStopped) 
+  {
+    return;
+  }
+
+  Serial.println("Curtains.stop");
+  // stop all operation that going now
+  this->isNeedClosing = false;
+  this->isNeedOpening = false;
+  this->operationGoing = false;
+
+  // stop motor
+  this->mtr->stop();
+  this->isStopped = true;
 }

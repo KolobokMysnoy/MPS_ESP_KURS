@@ -55,8 +55,8 @@ void MOTOR::stop()
 {
   Serial.println("Motor: Stop");
 
-  digitalWrite(this->pinIn1, LOW);
-  digitalWrite(this->pinIn2, LOW);
+  digitalWrite(this->pinIn1, HIGH);
+  digitalWrite(this->pinIn2, HIGH);
 
   isGoingForward = false;
   isGoingBackward = false;
