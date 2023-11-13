@@ -52,22 +52,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 #ifdef INFO_DEBUG
     outputLux(myMessage.insideLux, myMessage.outsideLux);
 #endif
-    if (initialConfLux == 1)
-    {
-      maxLux = myMessage.insideLux;
-      if (maxLux < needLux)
-      {
-        needLux = maxLux;
-      }
-      initialConfLux = 2;
-#ifdef INFO_DEBUG
-      Serial.println("--------------------------------------------------");
-      Serial.print("max == ");
-      Serial.println(maxLux);
-      Serial.print("need == ");
-      Serial.println(needLux);
-#endif
-    }
+    calibreBrigh();
 
     if (msgPers.isPersonInside)
     {
@@ -109,6 +94,42 @@ void data_sent(const uint8_t *mac_addr, esp_now_send_status_t status)
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
+// First calibration of max led brightness
+void calibreBrigh()
+{
+  if (initialConfLux == 1)
+  {
+    maxLux = myMessage.insideLux;
+    if (maxLux < needLux)
+    {
+      needLux = maxLux;
+    }
+    initialConfLux = 2;
+#ifdef INFO_DEBUG
+    Serial.println("--------------------------------------------------");
+    Serial.print("max == ");
+    Serial.println(maxLux);
+    Serial.print("need == ");
+    Serial.println(needLux);
+#endif
+  }
+}
+
+// Send 100 brigtness to led to know it brigtness
+void sendCalibre()
+{
+  // Send 100 to config
+  if (initialConfLux == 0)
+  {
+#ifdef INFO_DEBUG
+    Serial.println("First intial conflux");
+#endif
+    msgLed.procent = 100;
+    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+    initialConfLux = 1;
+  }
+}
+
 void motorSetup()
 {
   motorId = con.addPeer(motorAdress);
@@ -138,14 +159,5 @@ void setup()
 
 void loop()
 {
-  // Send 100 to config
-  if (initialConfLux == 0)
-  {
-#ifdef INFO_DEBUG
-    Serial.println("First intial conflux");
-#endif
-    msgLed.procent = 100;
-    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
-    initialConfLux = 1;
-  }
+  sendCalibre();
 }
