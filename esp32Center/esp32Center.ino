@@ -38,7 +38,10 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   {
     // From person sensor data
     memcpy(&msgPers, incomingData, sizeof(msgPers));
+
+#ifdef INFO_DEBUG
     outputPerson(msgPers.isPersonInside);
+#endif
 
     return;
   }
@@ -46,9 +49,9 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   {
     // From light sensors data
     memcpy(&myMessage, incomingData, sizeof(myMessage));
-
+#ifdef INFO_DEBUG
     outputLux(myMessage.insideLux, myMessage.outsideLux);
-
+#endif
     if (initialConfLux == 1)
     {
       maxLux = myMessage.insideLux;
@@ -57,12 +60,13 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
         needLux = maxLux;
       }
       initialConfLux = 2;
-
+#ifdef INFO_DEBUG
       Serial.println("--------------------------------------------------");
       Serial.print("max == ");
       Serial.println(maxLux);
       Serial.print("need == ");
       Serial.println(needLux);
+#endif
     }
 
     if (msgPers.isPersonInside)
@@ -82,8 +86,10 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 
     con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
 
+#ifdef INFO_DEBUG
     Serial.print("Data send to led ==");
     Serial.println(msgLed.procent);
+#endif
 
     int tmpMtr = getMotorPercent(myMessage.outsideLux, myMessage.insideLux);
     if (tmpMtr != motorMsg.procent)
@@ -113,27 +119,21 @@ void ledSetup()
   ledId = con.addPeer(ledAdress);
 }
 
-void setupEsp()
+void setup()
 {
   con.setup();
   con.getMac();
 
+#ifdef INFO_DEBUG
   con.addFunctionOnSent(data_sent);
+#endif
+
   con.addFunctionReceive(OnDataRecv);
 
   ledSetup();
   motorSetup();
+
   Serial.println("ESP-NOW initialized successfully");
-}
-
-void setup()
-{
-  Serial.begin(9600);
-  Serial.print("Seial begin");
-
-  setupEsp();
-
-  Serial.print("Seial end");
 }
 
 void loop()
@@ -141,7 +141,9 @@ void loop()
   // Send 100 to config
   if (initialConfLux == 0)
   {
+#ifdef INFO_DEBUG
     Serial.println("First intial conflux");
+#endif
     msgLed.procent = 100;
     con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
     initialConfLux = 1;

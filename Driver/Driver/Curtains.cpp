@@ -42,7 +42,11 @@ bool Curtains::isCanBeOperated(int timeToWait)
   // check if from last call time pass
   if (std::abs(static_cast<long>((this->lastChecked - millis()))) < timeToWait)
   {
+
+#ifdef INFO_DEBUG
     Serial.println("Curtains.isCanBeOperated: timeToWait is more than passed");
+#endif
+
     return false;
   }
 
@@ -73,8 +77,11 @@ void Curtains::open(int timeToWait)
 
   if (!this->isOpened())
   {
+
+#ifdef INFO_DEBUG
     Serial.println("Curtains.open: curains is closed");
     Serial.println("Curtains.open: Set to backwards");
+#endif
 
     mtr->backward();
   }
@@ -95,8 +102,11 @@ void Curtains::close(int timeToWait)
 
   if (!this->isClosed())
   {
+
+#ifdef INFO_DEBUG
     Serial.println("Curtains.close: curains is opened");
     Serial.println("Curtains.close: Set to forwards");
+#endif
 
     mtr->forward();
   }

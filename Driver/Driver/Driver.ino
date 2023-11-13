@@ -42,11 +42,19 @@ void OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
   switch (myMessage.procent)
   {
   case 0:
+
+#ifdef INFO_DEBUG
     Serial.println("Need Closing");
+#endif
+
     curt.setNeedOpening();
     break;
   case 100:
+
+#ifdef INFO_DEBUG
     Serial.println("Need opening");
+#endif
+
     curt.setNeedClosing();
     break;
   }

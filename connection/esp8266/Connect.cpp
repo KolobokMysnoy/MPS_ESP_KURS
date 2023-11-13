@@ -52,12 +52,15 @@ bool Connector::initESP(int timesToTry)
 
 int Connector::addPeer(uint8_t *peer, bool isValid, esp_now_role role, int timesToTry)
 {
-  esp_now_role rl;
-  if (isValid) {
-    rl = role;
-  } else {
-    rl = this->role;
-  }
+    esp_now_role rl;
+    if (isValid)
+    {
+        rl = role;
+    }
+    else
+    {
+        rl = this->role;
+    }
     if (this->freePeerId + 1 == maxSizeOfPeers)
     {
         Serial.println("addPeer: limit of peers");
@@ -81,32 +84,6 @@ int Connector::addPeer(uint8_t *peer, bool isValid, esp_now_role role, int times
 
     return -1;
 }
-
-// int Connector::addPeer(esp_now_peer_info_t &peerInfo, int timesToTry)
-// {
-//     if (this->freePeerId + 1 == maxSizeOfPeers)
-//     {
-//         Serial.println("addPeer: limit of peers");
-//         return -1;
-//     }
-
-//     memcpy(this->peers[this->freePeerId++], peerInfo.peer_addr, sizeof(this->peer));
-
-//     int tries = 0;
-//     while (tries != timesToTry)
-//     {
-//         if (esp_now_add_peer(peerInfo) != 0)
-//         {
-//             tries++;
-//         }
-//         else
-//         {
-//             return freePeerId - 1;
-//         }
-//     }
-
-//     return -1;
-// }
 
 void Connector::addFunctionOnSent(onSentFunc func)
 {
