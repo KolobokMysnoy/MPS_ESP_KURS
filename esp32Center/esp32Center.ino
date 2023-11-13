@@ -26,6 +26,14 @@ int needLux = 64;
 int maxLux = needLux;
 uint8_t initialConfLux = 0;
 
+// times to wait before send values
+unsigned long timeToSendLed = 5 * 100;      // 0.5s
+unsigned long timeToSendCurtains = 5 * 100; // 0.5s
+
+// last times send
+unsigned long lastTimeToSendLed = 0;
+unsigned long lastTimeToSendCurtains = 0;
+
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
@@ -69,8 +77,6 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
       msgLed.procent = 0;
     }
 
-    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
-
 #ifdef INFO_DEBUG
     Serial.print("Data send to led ==");
     Serial.println(msgLed.procent);
@@ -81,7 +87,6 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     {
       // if motor not in place already
       motorMsg.procent = tmpMtr;
-      con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
     }
 
     return;
@@ -160,4 +165,16 @@ void setup()
 void loop()
 {
   sendCalibre();
+
+  if (abs(lastTimeToSendCurtains - millis()) > timeToSendCurtains)
+  {
+    lastTimeToSendCurtains = millis();
+    con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
+  }
+
+  if (abs(lastTimeToSendLed - millis()) > timeToSendLed)
+  {
+    lastTimeToSendLed = millis();
+    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+  }
 }
