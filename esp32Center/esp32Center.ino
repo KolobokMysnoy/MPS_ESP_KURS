@@ -5,10 +5,13 @@
 #include "sendStructs.hpp"
 #include "consoleOut.hpp"
 
+// get structs
 messageLux myMessage;
+messagePerson msgPers;
+
+// send structs
 messageDriver motorMsg;
 messageLed msgLed;
-messagePerson msgPers;
 
 int motorId;
 int ledId;
@@ -27,12 +30,16 @@ int maxLux = needLux;
 uint8_t initialConfLux = 0;
 
 // times to wait before send values
-unsigned long timeToSendLed = 5 * 100;      // 0.5s
-unsigned long timeToSendCurtains = 5 * 100; // 0.5s
+unsigned long timeToSendLed = 5 * 1000;       // 5s
+unsigned long timeToSendCurtains = 10 * 1000; // 10s
 
 // last times send
 unsigned long lastTimeToSendLed = 0;
 unsigned long lastTimeToSendCurtains = 0;
+
+// previous values
+messageDriver prevMotorMsg;
+messageLed prevLedMsg;
 
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
@@ -68,12 +75,14 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
       int tmpPerc = getLedPercent(myMessage.insideLux, needLux, msgLed.procent, maxLux);
       if (tmpPerc != -1)
       {
+        prevLedMsg.procent = msgLed.procent;
         msgLed.procent = tmpPerc;
       }
     }
     else
     {
       // Person not in room. Off led
+      prevLedMsg.procent = msgLed.procent;
       msgLed.procent = 0;
     }
 
@@ -86,6 +95,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     if (tmpMtr != motorMsg.procent)
     {
       // if motor not in place already
+      prevMotorMsg.procent = motorMsg.procent;
       motorMsg.procent = tmpMtr;
     }
 
@@ -129,6 +139,7 @@ void sendCalibre()
 #ifdef INFO_DEBUG
     Serial.println("First intial conflux");
 #endif
+    prevLedMsg.procent = 0;
     msgLed.procent = 100;
     con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
     initialConfLux = 1;
@@ -166,6 +177,7 @@ void loop()
 {
   sendCalibre();
 
+  // send data in period time
   if (abs(lastTimeToSendCurtains - millis()) > timeToSendCurtains)
   {
     lastTimeToSendCurtains = millis();
@@ -176,5 +188,22 @@ void loop()
   {
     lastTimeToSendLed = millis();
     con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+  }
+
+  // send data if it changes
+  if (msgLed.procent != prevLedMsg.procent)
+  {
+    lastTimeToSendLed = millis();
+    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+
+    prevLedMsg.procent = msgLed.procent;
+  }
+
+  if (motorMsg.procent != prevMotorMsg.procent)
+  {
+    lastTimeToSendCurtains = millis();
+    con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
+
+    prevMotorMsg.procent = msgLed.procent;
   }
 }
