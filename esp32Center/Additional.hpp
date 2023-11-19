@@ -60,4 +60,14 @@ bool arraysEqual(const T (&arr1)[N], const T (&arr2)[N])
     return true;
 }
 
+template <typename T>
+T abs(T number) {
+  if (number >= 0) {
+    return number;
+  }
+
+  return -number;
+}
+
+
 #endif

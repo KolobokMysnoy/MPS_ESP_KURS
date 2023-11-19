@@ -5,16 +5,28 @@
 #include "sendStructs.hpp"
 #include "consoleOut.hpp"
 
+/////////////////////////////////////////
+// Setup for messages between ESP      //
+/////////////////////////////////////////
+
 // get structs
-messageLux myMessage;
-messagePerson msgPers;
+messageLux luxMsg;
+messagePerson persMsg;
 
 // send structs
 messageDriver motorMsg;
-messageLed msgLed;
+messageLed ledMsg;
 
 int motorId;
 int ledId;
+
+// previous values
+messageDriver prevMotorMsg;
+messageLed prevLedMsg;
+
+/////////////////////////////////////////
+// Setup for connection to others ESP  //
+/////////////////////////////////////////
 
 // Macs of other ESP
 const uint8_t sizeOfMac = 6;
@@ -25,23 +37,28 @@ uint8_t ledAdress[] = {0xec, 0xfa, 0xbc, 0xc9, 0x6a, 0x11};
 
 Connector con;
 
+/////////////////////////////////////////
+// Setup for lux                       //
+/////////////////////////////////////////
+
 int needLux = 64;
 int maxLux = needLux;
 uint8_t initialConfLux = 0;
 
+/////////////////////////////////////////
+// Setup for intervals                 //
+/////////////////////////////////////////
+
 // times to wait before send values
-unsigned long timeToSendLed = 5 * 1000;       // 5s
-unsigned long timeToSendCurtains = 10 * 1000; // 10s
+unsigned long intervalTimeToSendLed = 5 * 1000;       // 5s
+unsigned long intervalTimeToSendCurtains = 10 * 1000; // 10s
 
 // last times send
-unsigned long lastTimeToSendLed = 0;
-unsigned long lastTimeToSendCurtains = 0;
-
-// previous values
-messageDriver prevMotorMsg;
-messageLed prevLedMsg;
+unsigned long lastTimeMsgToLedSend = 0;
+unsigned long lastTimeMsgSendToCurtains = 0;
 
 // callback function that will be executed when data is received
+// check mac of receive and calculate new data for motor and led
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
   uint8_t macArr[sizeOfMac];
@@ -52,10 +69,10 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   if (arraysEqual(macArr, personAdress))
   {
     // From person sensor data
-    memcpy(&msgPers, incomingData, sizeof(msgPers));
+    memcpy(&persMsg, incomingData, sizeof(persMsg));
 
 #ifdef INFO_DEBUG
-    outputPerson(msgPers.isPersonInside);
+    outputPerson(persMsg.isPersonInside);
 #endif
 
     return;
@@ -63,58 +80,71 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   if (arraysEqual(macArr, luxControlAdress))
   {
     // From light sensors data
-    memcpy(&myMessage, incomingData, sizeof(myMessage));
+    memcpy(&luxMsg, incomingData, sizeof(luxMsg));
 #ifdef INFO_DEBUG
-    outputLux(myMessage.insideLux, myMessage.outsideLux);
+    outputLux(luxMsg.insideLux, luxMsg.outsideLux);
 #endif
-    calibreBrigh();
+    calibrateBrightness();
 
-    if (msgPers.isPersonInside)
-    {
-
-      int tmpPerc = getLedPercent(myMessage.insideLux, needLux, msgLed.procent, maxLux);
-      if (tmpPerc != -1)
-      {
-        prevLedMsg.procent = msgLed.procent;
-        msgLed.procent = tmpPerc;
-      }
-    }
-    else
-    {
-      // Person not in room. Off led
-      prevLedMsg.procent = msgLed.procent;
-      msgLed.procent = 0;
-    }
+    stateRecalculationLed(persMsg.isPersonInside, luxMsg.insideLux);
 
 #ifdef INFO_DEBUG
     Serial.print("Data send to led ==");
-    Serial.println(msgLed.procent);
+    Serial.println(ledMsg.procent);
 #endif
 
-    int tmpMtr = getMotorPercent(myMessage.outsideLux, myMessage.insideLux);
-    if (tmpMtr != motorMsg.procent)
-    {
-      // if motor not in place already
-      prevMotorMsg.procent = motorMsg.procent;
-      motorMsg.procent = tmpMtr;
-    }
-
-    return;
+    stateRecalculationMotor(luxMsg.insideLux, luxMsg.outsideLux);
   }
 }
 
-void data_sent(const uint8_t *mac_addr, esp_now_send_status_t status)
+// Output status of message
+void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
   Serial.print("\r\nStatus of Last Message Sent:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
+// Calculate led to set
+// Change ledMsg structure and prevLedMsg structure
+void stateRecalculationLed(const bool isPersonInside, const int luxInside)
+{
+  if (isPersonInside)
+  {
+
+    int tmpPerc = getLedPercent(luxInside, needLux, ledMsg.procent, maxLux);
+    if (tmpPerc != -1)
+    {
+      prevLedMsg.procent = ledMsg.procent;
+      ledMsg.procent = tmpPerc;
+    }
+  }
+  else
+  {
+    // Person not in room. Off led
+    prevLedMsg.procent = ledMsg.procent;
+    ledMsg.procent = 0;
+  }
+}
+
+// Calculate motor percent to set
+// Change motorMsg structure and prevMotorMsg structure
+void stateRecalculationMotor(const int luxInside, const int luxOutside)
+{
+  int tmpMtr = getMotorPercent(luxOutside, luxInside);
+  if (tmpMtr != motorMsg.procent)
+  {
+    // if motor not in place already
+    prevMotorMsg.procent = motorMsg.procent;
+    motorMsg.procent = tmpMtr;
+  }
+}
+
 // First calibration of max led brightness
-void calibreBrigh()
+void calibrateBrightness()
 {
   if (initialConfLux == 1)
   {
-    maxLux = myMessage.insideLux;
+    maxLux = luxMsg.insideLux;
     if (maxLux < needLux)
     {
       needLux = maxLux;
@@ -140,20 +170,10 @@ void sendCalibre()
     Serial.println("First intial conflux");
 #endif
     prevLedMsg.procent = 0;
-    msgLed.procent = 100;
-    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+    ledMsg.procent = 100;
+    con.sendData(ledId, (uint8_t *)&ledMsg, sizeof(ledMsg));
     initialConfLux = 1;
   }
-}
-
-void motorSetup()
-{
-  motorId = con.addPeer(motorAdress);
-}
-
-void ledSetup()
-{
-  ledId = con.addPeer(ledAdress);
 }
 
 void setup()
@@ -162,13 +182,13 @@ void setup()
   con.getMac();
 
 #ifdef INFO_DEBUG
-  con.addFunctionOnSent(data_sent);
+  con.addFunctionOnSent(onDataSent);
 #endif
 
   con.addFunctionReceive(OnDataRecv);
 
-  ledSetup();
-  motorSetup();
+  motorId = con.addPeer(motorAdress);
+  ledId = con.addPeer(ledAdress);
 
   Serial.println("ESP-NOW initialized successfully");
 }
@@ -178,32 +198,32 @@ void loop()
   sendCalibre();
 
   // send data in period time
-  if (abs(lastTimeToSendCurtains - millis()) > timeToSendCurtains)
+  if (abs(lastTimeMsgSendToCurtains - millis()) > intervalTimeToSendCurtains)
   {
-    lastTimeToSendCurtains = millis();
+    lastTimeMsgSendToCurtains = millis();
     con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
   }
 
-  if (abs(lastTimeToSendLed - millis()) > timeToSendLed)
+  if (abs(lastTimeMsgToLedSend - millis()) > intervalTimeToSendLed)
   {
-    lastTimeToSendLed = millis();
-    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+    lastTimeMsgToLedSend = millis();
+    con.sendData(ledId, (uint8_t *)&ledMsg, sizeof(ledMsg));
   }
 
   // send data if it changes
-  if (msgLed.procent != prevLedMsg.procent)
+  if (ledMsg.procent != prevLedMsg.procent)
   {
-    lastTimeToSendLed = millis();
-    con.sendData(ledId, (uint8_t *)&msgLed, sizeof(msgLed));
+    lastTimeMsgToLedSend = millis();
+    con.sendData(ledId, (uint8_t *)&ledMsg, sizeof(ledMsg));
 
-    prevLedMsg.procent = msgLed.procent;
+    prevLedMsg.procent = ledMsg.procent;
   }
 
   if (motorMsg.procent != prevMotorMsg.procent)
   {
-    lastTimeToSendCurtains = millis();
+    lastTimeMsgSendToCurtains = millis();
     con.sendData(motorId, (uint8_t *)&motorMsg, sizeof(motorMsg));
 
-    prevMotorMsg.procent = msgLed.procent;
+    prevMotorMsg.procent = ledMsg.procent;
   }
 }
