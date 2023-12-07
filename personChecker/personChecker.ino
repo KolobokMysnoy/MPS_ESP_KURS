@@ -19,7 +19,7 @@ unsigned long timePeriodSend = 5 * 1000;
 
 volatile unsigned long lastTime;
 volatile unsigned long lastSend = 0;
-
+#define RPZ_OUT
 volatile int valueInteupt;
 
 messagePerson personMsg;
@@ -30,6 +30,9 @@ Connector con = Connector(ESP_NOW_ROLE_SLAVE);
 
 ICACHE_RAM_ATTR void movement_detection()
 {
+  #ifdef RPZ_OUT
+    Serial.println("Interrupt begin");
+  #endif
   valueInteupt = digitalRead(ReadPin);
   if (valueInteupt)
   {
@@ -38,6 +41,9 @@ ICACHE_RAM_ATTR void movement_detection()
     lastTime = millis();
     personMsg.isPersonInside = true;
   }
+  #ifdef RPZ_OUT
+    Serial.println("Interrupt end");
+  #endif
 }
 
 void setup(void)
@@ -53,9 +59,22 @@ void setup(void)
   attachInterrupt(ReadPin, movement_detection, CHANGE);
 }
 
+template <typename T>
+T absU(T num1, T num2)
+{
+  if (num1 > num2)
+  {
+    return num1 - num2;
+  }
+  return num2 - num1;
+};
+
 void loop(void)
 {
-  if (personMsg.isPersonInside && std::abs(static_cast<long>(lastTime - millis())) > timeWithoutPerson)
+  #ifdef RPZ_OUT
+    Serial.println("Loop begin");
+  #endif
+  if (personMsg.isPersonInside && static_cast<long>(absU(lastTime, millis())) > timeWithoutPerson)
   {
     // if person always in room than pin won't trigger interrupt
     if (digitalRead(ReadPin))
@@ -74,7 +93,7 @@ void loop(void)
     }
   }
 
-  if (std::abs(static_cast<long>(lastSend - millis())) > timePeriodSend)
+  if (static_cast<long>(absU(lastSend, millis())) > timePeriodSend)
   {
     Serial.println("Send to hub");
     lastSend = millis();
@@ -82,4 +101,7 @@ void loop(void)
   }
 
   delay(100);
+  #ifdef RPZ_OUT
+    Serial.println("Loop end");
+  #endif
 }

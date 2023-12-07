@@ -1,8 +1,6 @@
 #ifndef Connection_ESP
 #define Connection_ESP
 
-#include <stdint.h>
-#include "c_types.h"
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <espnow.h>

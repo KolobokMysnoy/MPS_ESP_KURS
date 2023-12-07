@@ -11,6 +11,8 @@
 #include "Connect.hpp"
 #include "sendStructs.hpp"
 
+#define INFO_DEBUG
+
 const int MaxValue = 512;
 
 // Motor control
@@ -21,8 +23,8 @@ const int PinIn2 = 5; // D2
 const int PinClosed = 14; // D5
 const int PinOpened = 12; // D6
 
-int timeToWait = 500;
-
+int timeToWait = 1000;
+#define RPZ_OUT
 // Init motor and curtains to control motor
 MOTOR motor = MOTOR(PinIn1, PinIn2);
 Curtains curt = Curtains(&motor, PinClosed, PinOpened);
@@ -34,10 +36,15 @@ messageDriver myMessage;
 
 void OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
 {
+#ifdef RPZ_OUT
+  Serial.println("Receive begin");
+  #endif
   memcpy(&myMessage, incomingData, sizeof(myMessage));
 
+#ifdef INFO_DEBUG
   Serial.print("Get message with driver percent");
   Serial.println(myMessage.procent);
+#endif
 
   switch (myMessage.procent)
   {
@@ -58,6 +65,9 @@ void OnDataRecv(uint8_t *mac, uint8_t *incomingData, uint8_t len)
     curt.setNeedClosing();
     break;
   }
+  #ifdef RPZ_OUT
+  Serial.println("receive end");
+  #endif
 }
 
 void pinSetup()
@@ -80,6 +90,9 @@ void setup(void)
 
 void loop(void)
 {
+  #ifdef RPZ_OUT
+  Serial.println("Loop begin");
+  #endif
   if (curt.getNeedClosing())
   {
     curt.close(timeToWait);
@@ -94,4 +107,7 @@ void loop(void)
   {
     curt.stop();
   }
+  #ifdef RPZ_OUT
+  Serial.println("Loop end");
+  #endif
 }

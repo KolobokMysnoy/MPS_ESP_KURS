@@ -2,10 +2,10 @@
 
 int Luxementr::convertToLux(int res)
 {
-  float Vout = float(res) * (float(this->VIN) / float(1023)); // Conversion analog to voltage
-  float RLDR = (this->R * (this->VIN - Vout)) / Vout;         // Conversion voltage to resistance
-  int lux = 500 / (RLDR / 1000);                              // Conversion resitance to lumen
-  return lux;
+    float Vout = float(res) * (float(this->VIN) / float(1023)); // Conversion analog to voltage
+    float RLDR = (this->R * (this->VIN - Vout)) / Vout;         // Conversion voltage to resistance
+    int lux = 500 / (RLDR / 1000);                              // Conversion resitance to lumen
+    return lux;
 }
 
 Luxementr::Luxementr(int insidePin, int outsidePin, int readPin)
