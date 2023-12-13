@@ -1,9 +1,6 @@
 #ifndef Connection_ESP
 #define Connection_ESP
 
-#include <stdint.h>
-#include <Arduino.h>
-
 // ESP32 libs for wifi
 #include <esp_now.h>
 #include <WiFi.h>

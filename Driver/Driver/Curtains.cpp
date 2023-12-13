@@ -1,5 +1,15 @@
 #include "Curtains.hpp"
 
+template <typename T>
+T absU(T num1, T num2)
+{
+  if (num1 > num2)
+  {
+    return num1 - num2;
+  }
+  return num2 - num1;
+};
+
 Curtains::Curtains(MOTOR *mtr, int pinClosed, int pinOpened)
 {
   this->mtr = mtr;
@@ -38,11 +48,15 @@ void Curtains::setNeedOpening()
 bool Curtains::isCanBeOperated(int timeToWait)
 {
   Serial.println("Curtains.isCanBeOperated:");
-  Serial.println(static_cast<long>((this->lastChecked - millis())));
+  Serial.println(static_cast<long>(absU(this->lastChecked, millis())) > timeToWait);
   // check if from last call time pass
-  if (std::abs(static_cast<long>((this->lastChecked - millis()))) < timeToWait)
+  if (static_cast<long>(absU(this->lastChecked, millis())) <= timeToWait)
   {
+
+#ifdef INFO_DEBUG
     Serial.println("Curtains.isCanBeOperated: timeToWait is more than passed");
+#endif
+
     return false;
   }
 
@@ -73,8 +87,11 @@ void Curtains::open(int timeToWait)
 
   if (!this->isOpened())
   {
+
+#ifdef INFO_DEBUG
     Serial.println("Curtains.open: curains is closed");
     Serial.println("Curtains.open: Set to backwards");
+#endif
 
     mtr->backward();
   }
@@ -93,10 +110,15 @@ void Curtains::close(int timeToWait)
   this->lastChecked = millis();
   operationGoing = true;
 
+  Serial.print("Pin close if");
+  Serial.println(!this->isClosed());
   if (!this->isClosed())
   {
+
+#ifdef INFO_DEBUG
     Serial.println("Curtains.close: curains is opened");
     Serial.println("Curtains.close: Set to forwards");
+#endif
 
     mtr->forward();
   }
@@ -104,12 +126,12 @@ void Curtains::close(int timeToWait)
 
 bool Curtains::isClosed()
 {
-  return digitalRead(this->pinClosed) == 1;
+  return digitalRead(this->pinClosed) == 0;
 }
 
 bool Curtains::isOpened()
 {
-  return digitalRead(this->pinOpened) == 1;
+  return digitalRead(this->pinOpened) == 0;
 }
 
 void Curtains::stop()

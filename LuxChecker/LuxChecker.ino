@@ -44,10 +44,16 @@ void sendLux(int insideLux, int outsideLux)
 
   con.sendData(idOfPeer, (uint8_t *)&myMessage, sizeof(myMessage));
 }
-
+#define RPZ_OUT
 void loop(void)
 {
+  #ifdef RPZ_OUT
+  Serial.println("Loop begin");
+  #endif
   sendLux(lux.getInsideLux(), lux.getOutsideLux());
 
   delay(1400);
+  #ifdef RPZ_OUT
+  Serial.println("Loop end");
+  #endif
 }
